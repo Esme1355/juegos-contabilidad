@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego de Contabilidad</title>
+<style>
+  /* Estilos básicos */
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .game-container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 320px;
+  }
+  h1 {
+    margin-top: 0;
+  }
+  #question {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    min-height: 3em;
+  }
+  .answers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  button {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:focus {
+    outline: 2px solid #000;
+  }
+  .activo { background: #4caf50; color: #fff; }
+  .pasivo { background: #2196f3; color: #fff; }
+  .patrimonio { background: #ff9800; color: #fff; }
+  .correct { animation: pulse 0.3s; }
+  .incorrect { animation: shake 0.3s; }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+  }
+  #score {
+    margin-top: 1rem;
+  }
+  #start-btn {
+    margin-top: 1rem;
+    background: #673ab7;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+<div class="game-container">
+  <h1>Contabilidad Básica</h1>
+  <div id="question" aria-live="polite"></div>
+  <div class="answers">
+    <button id="activo" class="activo" aria-label="Respuesta activo">Activo</button>
+    <button id="pasivo" class="pasivo" aria-label="Respuesta pasivo">Pasivo</button>
+    <button id="patrimonio" class="patrimonio" aria-label="Respuesta patrimonio">Patrimonio</button>
+  </div>
+  <div id="score" aria-live="polite"></div>
+  <button id="start-btn">Comenzar</button>
+</div>
+<script>
+(() => {
+  // Datos de cuentas contables
+  const accounts = [
+    { name: 'Dinero en caja', type: 'Activo' },
+    { name: 'Préstamo bancario', type: 'Pasivo' },
+    { name: 'Capital social', type: 'Patrimonio' },
+    { name: 'Clientes por cobrar', type: 'Activo' },
+    { name: 'Proveedores', type: 'Pasivo' },
+    { name: 'Mobiliario y equipo', type: 'Activo' },
+    { name: 'Hipoteca por pagar', type: 'Pasivo' },
+    { name: 'Utilidades retenidas', type: 'Patrimonio' },
+    { name: 'Inventario', type: 'Activo' },
+    { name: 'Obligaciones fiscales', type: 'Pasivo' },
+    { name: 'Aportaciones de socios', type: 'Patrimonio' },
+    { name: 'Equipo de cómputo', type: 'Activo' },
+    { name: 'Documentos por pagar', type: 'Pasivo' },
+    { name: 'Reserva legal', type: 'Patrimonio' },
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+  let selected = [];
+
+  const questionEl = document.getElementById('question');
+  const buttons = {
+    Activo: document.getElementById('activo'),
+    Pasivo: document.getElementById('pasivo'),
+    Patrimonio: document.getElementById('patrimonio')
+  };
+  const scoreEl = document.getElementById('score');
+  const startBtn = document.getElementById('start-btn');
+
+  // Inicializa eventos
+  function init() {
+    Object.keys(buttons).forEach(key => {
+      buttons[key].addEventListener('click', () => handleAnswer(key));
+    });
+    startBtn.addEventListener('click', startGame);
+  }
+
+  // Inicia el juego
+  function startGame() {
+    score = 0;
+    currentQuestion = 0;
+    selected = getRandomQuestions(10);
+    startBtn.style.display = 'none';
+    scoreEl.textContent = '';
+    showNextQuestion();
+  }
+
+  // Obtiene n preguntas al azar
+  function getRandomQuestions(n) {
+    const shuffled = [...accounts].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, n);
+  }
+
+  // Muestra la siguiente pregunta o el puntaje final
+  function showNextQuestion() {
+    if (currentQuestion >= selected.length) {
+      questionEl.textContent = 'Juego terminado';
+      scoreEl.textContent = `Puntaje final: ${score} de ${selected.length}`;
+      startBtn.textContent = 'Reiniciar';
+      startBtn.style.display = 'block';
+      return;
+    }
+    const account = selected[currentQuestion];
+    questionEl.textContent = `¿A qué categoría pertenece "${account.name}"?`;
+  }
+
+  // Maneja la respuesta del usuario
+  function handleAnswer(answer) {
+    if (currentQuestion >= selected.length) return;
+    const account = selected[currentQuestion];
+    const isCorrect = answer === account.type;
+    animateButton(buttons[answer], isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) {
+      score++;
+      playSound();
+    }
+    currentQuestion++;
+    setTimeout(showNextQuestion, 600); // espera animación
+  }
+
+  // Anima el botón presionado
+  function animateButton(button, cls) {
+    button.classList.add(cls);
+    setTimeout(() => button.classList.remove(cls), 300);
+  }
+
+  // Reproduce un sonido sencillo al acertar
+  function playSound() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    osc.start();
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.stop(ctx.currentTime + 0.3);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

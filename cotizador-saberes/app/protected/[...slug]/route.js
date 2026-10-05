@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { authCookieName,isAuthenticated } from '../../../../lib/auth';
-import { getAsset } from '../../../../lib/assets';
+import { authCookieName,isAuthenticated } from '../../../lib/auth';
+import { getAsset } from '../../../lib/assets';
 export const runtime='nodejs'; export const dynamic='force-dynamic';
 export async function GET(request,{params}){
  const cookie=cookies().get(authCookieName())?.value; if(!isAuthenticated(cookie)) return NextResponse.redirect(new URL('/',request.url));

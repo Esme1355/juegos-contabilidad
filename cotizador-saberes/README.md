@@ -5,3 +5,5 @@ El contenido privado del cotizador, manual, prompt y modelo PDF se almacena cifr
 Variables requeridas: `PORTAL_USER`, `PORTAL_PASSWORD`, `PORTAL_SECRET`, `CONTENT_KEY`.
 
 Subdirectorio usado deliberadamente dentro del repositorio existente para evitar modificar el proyecto principal.
+
+Deployment environment configured on Vercel.
